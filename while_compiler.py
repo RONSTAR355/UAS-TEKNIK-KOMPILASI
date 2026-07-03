@@ -1,8 +1,5 @@
-python_code = '''import re
+python_code = """import re
 
-# ==========================================
-# 1. ANALISIS LEKSIKAL (LEXER)
-# ==========================================
 class Token:
     def __init__(self, type_, value):
         self.type = type_
@@ -15,18 +12,18 @@ class Lexer:
         self.text = text
         self.tokens = []
         self.rules = [
-            ('WHILE',    r'\\bwhile\\b'),
-            ('ID',       r'\\b[a-zA-Z_][a-zA-Z0-9_]*\\b'),
-            ('NUM',      r'\\b\\d+\\b'),
+            ('WHILE',    r'\bwhile\b'),
+            ('ID',       r'\b[a-zA-Z_][a-zA-Z0-9_]*\b'),
+            ('NUM',      r'\b\d+\b'),
             ('REL_OP',   r'==|!=|<=|>=|<|>'),
-            ('ARITH_OP', r'\\+|\\-|\\*|/'),
+            ('ARITH_OP', r'\+|\-|\*|/'),
             ('ASSIGN',   r'='),
-            ('LPAREN',   r'\\('),
-            ('RPAREN',   r'\\)'),
-            ('LBRACE',   r'\\{'),
-            ('RBRACE',   r'\\}'),
+            ('LPAREN',   r'\('),
+            ('RPAREN',   r'\)'),
+            ('LBRACE',   r'\{'),
+            ('RBRACE',   r'\}'),
             ('SEMI',     r';'),
-            ('SKIP',     r'[ \\t\\n]+'),
+            ('SKIP',     r'[ \t\n]+'),
             ('MISMATCH', r'.'),
         ]
 
@@ -43,9 +40,6 @@ class Lexer:
                 self.tokens.append(Token(kind, value))
         return self.tokens
 
-# ==========================================
-# 2. ANALISIS SINTAKSIS (PARSER & AST)
-# ==========================================
 class ASTNode: pass
 
 class WhileNode(ASTNode):
@@ -88,7 +82,6 @@ class Parser:
         raise SyntaxError(f"Ekspektasi '{expected}', ditemukan '{token.value if token else 'EOF'}'")
 
     def parse(self):
-        # Format tata bahasa: while ( condition ) { statements }
         self.consume('WHILE')
         self.consume('LPAREN')
         condition = self.parse_condition()
@@ -128,9 +121,6 @@ class Parser:
             statements.append(AssignmentNode(var_name, expr))
         return statements
 
-# ==========================================
-# 3. ANALISIS SEMANTIK
-# ==========================================
 class SemanticAnalyzer:
     def __init__(self, symbol_table):
         self.symbol_table = symbol_table
@@ -151,9 +141,6 @@ class SemanticAnalyzer:
             if node.name not in self.symbol_table:
                 raise NameError(f"Error Semantik: Variabel '{node.name}' belum dideklarasikan!")
 
-# ==========================================
-# 4. GENERASI KODE ANTARA (TAC)
-# ==========================================
 class TACGenerator:
     def __init__(self):
         self.label_count = 0
@@ -202,43 +189,31 @@ class TACGenerator:
                 self.code.append(f"{temp} = {left} {expr_node.op} {right}")
                 return temp
 
-# ==========================================
-# SIMULASI PROGRAM UTAMA
-# ==========================================
 if __name__ == "__main__":
-    # 1. Definisi Source Code
     source_code = "while ( i < 10 ) { a = a + 5; i = i + 1; }"
     print(f"SOURCE CODE:\\n{source_code}\\n")
 
-    # 2. Lexical Analysis
-    print("--- 1. TAHAP ANALISIS LEKSIKAL (TOKEN) ---")
     lexer = Lexer(source_code)
     tokens = lexer.tokenize()
-    print(tokens, "\\n")
+    print("--- 1. TAHAP ANALISIS LEKSIKAL (TOKEN) ---\\n", tokens, "\\n")
 
-    # 3. Syntax Analysis
-    print("--- 2. TAHAP ANALISIS SINTAKSIS (AST) ---")
     parser = Parser(tokens)
     ast_root = parser.parse()
-    print("✓ Abstract Syntax Tree (AST) berhasil dibangun.\\n")
+    print("--- 2. TAHAP ANALISIS SINTAKSIS (AST) ---\\n✓ AST berhasil dibangun.\\n")
 
-    # 4. Semantic Analysis
-    print("--- 3. TAHAP ANALISIS SEMANTIK ---")
-    # Asumsi 'i' dan 'a' sudah dideklarasikan sebelumnya
     symbol_table = {"i": "int", "a": "int"} 
     analyzer = SemanticAnalyzer(symbol_table)
     analyzer.check(ast_root)
-    print("✓ Analisis semantik selesai, tidak ada variabel yang tidak dikenali.\\n")
+    print("--- 3. TAHAP ANALISIS SEMANTIK ---\\n✓ Lolos pengecekan variabel.\\n")
 
-    # 5. TAC Generation
-    print("--- 4. TAHAP GENERASI KODE ANTARA (TAC) ---")
     tac_gen = TACGenerator()
     tac_gen.generate(ast_root)
+    print("--- 4. TAHAP GENERASI KODE ANTARA (TAC) ---")
     for line in tac_gen.code:
         print(line)
-'''
+"""
 
-md_code = '''# Tugas Proyek Akhir: Representasi Tahapan Kompilasi
+md_code = """# Tugas Proyek Akhir: Representasi Tahapan Kompilasi
 
 ## 📌 Deskripsi Tugas
 Proyek ini merupakan implementasi dan simulasi dari tahapan-tahapan utama dalam proses kompilasi (*compiler*). Tahapan yang disimulasikan meliputi:
@@ -254,3 +229,14 @@ Konstruksi sintaksis yang dipilih untuk proyek ini adalah perulangan **`while`**
 
 ### 📜 Pola Tata Bahasa (*Grammar* / BNF)
 Pola sintaksis didefinisikan menggunakan pendekatan *Backus-Naur Form* (BNF) sederhana sebagai berikut:
+
+```text
+<while_stmt>     ::= "while" "(" <condition> ")" "{" <statement_list> "}"
+<condition>      ::= <expression> <rel_op> <expression>
+<expression>     ::= <identifier> | <number>
+<rel_op>         ::= "<" | ">" | "==" | "!=" | "<=" | ">="
+<statement_list> ::= <statement> | <statement> <statement_list>
+<statement>      ::= <assignment> ";"
+<assignment>     ::= <identifier> "=" <expression> <arith_op> <expression> 
+                   | <identifier> "=" <expression>
+<arith_op>       ::= "+" | "-" | "*" | "/"
