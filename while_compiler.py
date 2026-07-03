@@ -1,9 +1,10 @@
-python_code = """import re
+import re
 
 class Token:
     def __init__(self, type_, value):
         self.type = type_
         self.value = value
+
     def __repr__(self):
         return f"({self.type}, '{self.value}')"
 
@@ -40,7 +41,8 @@ class Lexer:
                 self.tokens.append(Token(kind, value))
         return self.tokens
 
-class ASTNode: pass
+class ASTNode: 
+    pass
 
 class WhileNode(ASTNode):
     def __init__(self, condition, body):
@@ -191,52 +193,26 @@ class TACGenerator:
 
 if __name__ == "__main__":
     source_code = "while ( i < 10 ) { a = a + 5; i = i + 1; }"
-    print(f"SOURCE CODE:\\n{source_code}\\n")
+    print(f"SOURCE CODE:\n{source_code}\n")
 
+    print("--- 1. TAHAP ANALISIS LEKSIKAL (TOKEN) ---")
     lexer = Lexer(source_code)
     tokens = lexer.tokenize()
-    print("--- 1. TAHAP ANALISIS LEKSIKAL (TOKEN) ---\\n", tokens, "\\n")
+    print(tokens, "\n")
 
+    print("--- 2. TAHAP ANALISIS SINTAKSIS (AST) ---")
     parser = Parser(tokens)
     ast_root = parser.parse()
-    print("--- 2. TAHAP ANALISIS SINTAKSIS (AST) ---\\n✓ AST berhasil dibangun.\\n")
+    print("✓ Abstract Syntax Tree (AST) berhasil dibangun.\n")
 
+    print("--- 3. TAHAP ANALISIS SEMANTIK ---")
     symbol_table = {"i": "int", "a": "int"} 
     analyzer = SemanticAnalyzer(symbol_table)
     analyzer.check(ast_root)
-    print("--- 3. TAHAP ANALISIS SEMANTIK ---\\n✓ Lolos pengecekan variabel.\\n")
+    print("✓ Analisis semantik selesai, tidak ada variabel yang tidak dikenali.\n")
 
+    print("--- 4. TAHAP GENERASI KODE ANTARA (TAC) ---")
     tac_gen = TACGenerator()
     tac_gen.generate(ast_root)
-    print("--- 4. TAHAP GENERASI KODE ANTARA (TAC) ---")
     for line in tac_gen.code:
         print(line)
-"""
-
-md_code = """# Tugas Proyek Akhir: Representasi Tahapan Kompilasi
-
-## 📌 Deskripsi Tugas
-Proyek ini merupakan implementasi dan simulasi dari tahapan-tahapan utama dalam proses kompilasi (*compiler*). Tahapan yang disimulasikan meliputi:
-1. **Analisis Leksikal (*Lexical Analysis*)**
-2. **Analisis Sintaksis (*Syntax Analysis*)**
-3. **Analisis Semantik (*Semantic Analysis*)**
-4. **Generasi Kode Antara (*Intermediate Code Generation* / TAC)**
-
----
-
-## 🏗️ Pilihan Konstruksi: Perulangan `while`
-Konstruksi sintaksis yang dipilih untuk proyek ini adalah perulangan **`while`** (*while-loop*). Konstruksi ini dipilih karena membutuhkan representasi alur kontrol yang menarik, melibatkan evaluasi kondisi berulang dan loncatan (*jump*) instruksi.
-
-### 📜 Pola Tata Bahasa (*Grammar* / BNF)
-Pola sintaksis didefinisikan menggunakan pendekatan *Backus-Naur Form* (BNF) sederhana sebagai berikut:
-
-```text
-<while_stmt>     ::= "while" "(" <condition> ")" "{" <statement_list> "}"
-<condition>      ::= <expression> <rel_op> <expression>
-<expression>     ::= <identifier> | <number>
-<rel_op>         ::= "<" | ">" | "==" | "!=" | "<=" | ">="
-<statement_list> ::= <statement> | <statement> <statement_list>
-<statement>      ::= <assignment> ";"
-<assignment>     ::= <identifier> "=" <expression> <arith_op> <expression> 
-                   | <identifier> "=" <expression>
-<arith_op>       ::= "+" | "-" | "*" | "/"
